@@ -51,6 +51,51 @@ public class PessoasController(AppDbContext context) : ControllerBase
     }
 
     /// <summary>
+    /// Obtém os cursos em que uma pessoa está inscrita
+    /// </summary>
+    /// <param name="id">ID da pessoa</param>
+    /// <returns>Lista de cursos da pessoa</returns>
+    /// <remarks>
+    /// Exemplo de requisição:
+    ///
+    ///     GET /api/pessoas/1/cursos
+    ///
+    /// </remarks>
+    /// <response code="200">Retorna a lista de cursos da pessoa</response>
+    /// <response code="404">Pessoa não encontrada</response>
+    [HttpGet("{id}/cursos")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetCursosDaPessoa(int id)
+    {
+        var pessoa = await _context.Pessoas.FindAsync(id);
+
+        if (pessoa is null)
+            return NotFound("Pessoa não encontrada");
+
+        var cursos = await _context.PessoasCursos
+            .Where(pc => pc.PessoaId == id)
+            .Include(pc => pc.Curso)
+            .Select(pc => new
+            {
+                pc.Curso.Id,
+                pc.Curso.Nome,
+                pc.Curso.Horario,
+                pc.Curso.CargaHoraria,
+                pc.Curso.TempoDeCurso,
+                pc.DataInscricao
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            Pessoa = pessoa.NomeCompleto,
+            QuantidadeCursos = cursos.Count,
+            Cursos = cursos
+        });
+    }
+
+    /// <summary>
     /// Obtém uma pessoa pelo ID
     /// </summary>
     /// <param name="id">ID da pessoa</param>

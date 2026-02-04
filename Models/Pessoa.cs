@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace api_cadastro_pessoa.Models;
 
@@ -57,4 +58,10 @@ public class Pessoa
     [Required(ErrorMessage = "O telefone é obrigatório")]
     [Phone(ErrorMessage = "Telefone inválido")]
     public string Telefone { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Cursos em que a pessoa está inscrita
+    /// </summary>
+    [JsonIgnore]
+    public ICollection<PessoaCurso> PessoasCursos { get; set; } = [];
 }
